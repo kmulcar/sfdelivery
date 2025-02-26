@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Signature Capture</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <!-- Include Signature Pad Library -->
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+</head>
+<body class="container">
+  <h2>Customer Signature</h2>
+  <canvas id="signatureCanvas" style="border:1px solid #000; width:100%; height:200px;"></canvas>
+  <br>
+  <button id="clearBtn" class="btn btn-secondary">Clear</button>
+  <button id="saveBtn" class="btn btn-primary">Save Signature</button>
+  
+  <script>
+    const canvas = document.getElementById('signatureCanvas');
+    const signaturePad = new SignaturePad(canvas);
+    
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      signaturePad.clear();
+    });
+    
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      if (signaturePad.isEmpty()) {
+        alert("Please provide a signature first.");
+      } else {
+        const dataURL = signaturePad.toDataURL();
+        // Send the signature data to your backend or Salesforce API
+        fetch('https://your-api-endpoint.com/saveSignature', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            signature: dataURL,
+            // Optionally include additional info (e.g., order ID)
+          })
+        })
+        .then(response => response.json())
+        .then(result => {
+          alert("Signature saved successfully!");
+        })
+        .catch(error => {
+          console.error('Error saving signature:', error);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
