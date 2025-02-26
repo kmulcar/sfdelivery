@@ -4,45 +4,246 @@
   <meta charset="UTF-8">
   <title>Driver Dashboard</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <!-- Firebase App & Auth SDKs -->
+  <!-- Firebase and other scripts as needed -->
   <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-auth-compat.js"></script>
-  <!-- Firebase config -->
   <script src="firebase-config.js"></script>
+  <style>
+    /* Custom styles, if needed */
+    .tab-content { margin-top: 20px; }
+  </style>
 </head>
 <body class="container">
-  <h2>Welcome, <span id="driverName"></span></h2>
-  <div id="orders">
-    <!-- Orders will be dynamically loaded here -->
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Dashboard</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active" id="tab-active">
+          <a class="nav-link" href="#" onclick="showTab('active')">Active Orders</a>
+        </li>
+        <li class="nav-item" id="tab-completed">
+          <a class="nav-link" href="#" onclick="showTab('completed')">Completed Orders</a>
+        </li>
+        <li class="nav-item" id="tab-stats">
+          <a class="nav-link" href="#" onclick="showTab('stats')">Statistics</a>
+        </li>
+      </ul>
+      <span id="driverName" class="navbar-text"></span>
+    </div>
+  </nav>
+  
+  <!-- Tab Content -->
+  <div class="tab-content">
+    <!-- Active Orders -->
+    <div id="activeOrders" class="tab-pane active">
+      <h3>Active Orders</h3>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Platform</th>
+            <th>1C Order ID</th>
+            <th>Order Status</th>
+            <th>Order Total</th>
+            <th>Customer Name</th>
+          </tr>
+        </thead>
+        <tbody id="activeOrdersList">
+          <!-- Orders will be loaded here -->
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Completed Orders -->
+    <div id="completedOrders" class="tab-pane" style="display:none;">
+      <h3>Completed Orders</h3>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Platform</th>
+            <th>1C Order ID</th>
+            <th>Order Status</th>
+            <th>Order Total</th>
+            <th>Customer Name</th>
+          </tr>
+        </thead>
+        <tbody id="completedOrdersList">
+          <!-- Completed orders will be loaded here -->
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Statistics -->
+    <div id="stats" class="tab-pane" style="display:none;">
+      <h3>Statistics</h3>
+      <p>Delivered Today: <span id="deliveredToday">X</span></p>
+      <p>Delivered This Week: <span id="deliveredWeek">Y</span></p>
+      <p>Delivered This Month: <span id="deliveredMonth">Z</span></p>
+    </div>
   </div>
   
+  <!-- Order Detail Modal (hidden until needed) -->
+  <div class="modal fade" id="orderDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Order Details</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <!-- Order details content -->
+          <div id="orderDetails">
+            <h4>Order Information</h4>
+            <p><strong>Platform:</strong> <span id="detailPlatform"></span></p>
+            <p><strong>Order Number:</strong> <span id="detailOrderNumber"></span></p>
+            <p><strong>1C Order ID:</strong> <span id="detail1COrderID"></span></p>
+            <p><strong>Order Date:</strong> <span id="detailOrderDate"></span></p>
+            <p><strong>Order Total:</strong> <span id="detailOrderTotal"></span></p>
+            <p><strong>Order Status:</strong> <span id="detailOrderStatus"></span></p>
+            <p><strong>Payment Type:</strong> <span id="detailPaymentType"></span></p>
+            <p><strong>Customer:</strong> <span id="detailCustomer"></span></p>
+            <p><strong>Customer Address:</strong> <span id="detailCustomerAddress"></span></p>
+            <p><strong>Delivery Method:</strong> <span id="detailDeliveryMethod"></span></p>
+          </div>
+          <hr>
+          <div id="orderedProducts">
+            <h4>Ordered Products</h4>
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Barcode</th>
+                  <th>Brand</th>
+                  <th>Size</th>
+                  <th>Color</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Change Status</th>
+                </tr>
+              </thead>
+              <tbody id="productsList">
+                <!-- Ordered products will be dynamically loaded -->
+              </tbody>
+            </table>
+          </div>
+          <hr>
+          <!-- GET SIGNATURE button -->
+          <div>
+            <button class="btn btn-success" onclick="openSignatureCapture()">GET SIGNATURE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Include Bootstrap and jQuery JS (for modals) -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Custom JavaScript -->
   <script>
-    const auth = firebase.auth();
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        // Display driver information (using email as a simple identifier)
-        document.getElementById('driverName').textContent = user.email;
-        
-        // Example: Fetch orders via an API endpoint that returns driver-specific data.
-        // Replace the URL below with your actual API endpoint.
-        fetch('https://your-api-endpoint.com/getOrders?driver=' + encodeURIComponent(user.email))
-          .then(response => response.json())
-          .then(data => {
-            let html = '<ul>';
-            data.orders.forEach(order => {
-              html += `<li>Order: ${order.name} - Status: ${order.status}</li>`;
-            });
-            html += '</ul>';
-            document.getElementById('orders').innerHTML = html;
-          })
-          .catch(error => {
-            console.error('Error fetching orders:', error);
-          });
-      } else {
-        // If not logged in, redirect back to the login page
-        window.location.href = "login.html";
+    // Function to switch tabs
+    function showTab(tab) {
+      document.getElementById("activeOrders").style.display = (tab === 'active') ? 'block' : 'none';
+      document.getElementById("completedOrders").style.display = (tab === 'completed') ? 'block' : 'none';
+      document.getElementById("stats").style.display = (tab === 'stats') ? 'block' : 'none';
+      
+      // Update active tab styling if desired...
+    }
+    
+    // Placeholder: Load orders for Active and Completed tabs via API calls
+    function loadOrders() {
+      // For demonstration, let's assume you have a function to fetch orders for the logged-in driver.
+      // Replace the below with an actual AJAX/fetch call.
+      const activeOrders = [
+        { platform: "Platform A", orderId1C: "12345", status: "New", total: "$100", customer: "John Doe", id: "order1" },
+        // ... more orders
+      ];
+      
+      const completedOrders = [
+        { platform: "Platform A", orderId1C: "67890", status: "Completed", total: "$150", customer: "Jane Smith", id: "order2" },
+        // ... more orders
+      ];
+      
+      let activeHtml = "";
+      activeOrders.forEach(order => {
+        activeHtml += `<tr onclick="openOrderDetail('${order.id}')">
+                         <td>${order.platform}</td>
+                         <td>${order.orderId1C}</td>
+                         <td>${order.status}</td>
+                         <td>${order.total}</td>
+                         <td>${order.customer}</td>
+                       </tr>`;
+      });
+      document.getElementById("activeOrdersList").innerHTML = activeHtml;
+      
+      let completedHtml = "";
+      completedOrders.forEach(order => {
+        completedHtml += `<tr onclick="openOrderDetail('${order.id}')">
+                            <td>${order.platform}</td>
+                            <td>${order.orderId1C}</td>
+                            <td>${order.status}</td>
+                            <td>${order.total}</td>
+                            <td>${order.customer}</td>
+                          </tr>`;
+      });
+      document.getElementById("completedOrdersList").innerHTML = completedHtml;
+      
+      // Also, update the statistics (for demo purposes)
+      document.getElementById("deliveredToday").textContent = 5;
+      document.getElementById("deliveredWeek").textContent = 20;
+      document.getElementById("deliveredMonth").textContent = 75;
+    }
+    
+    // Function to open the order detail modal and populate it
+    function openOrderDetail(orderId) {
+      // For demo, use static data. Replace with an API call to get order details.
+      // Populate order details fields
+      document.getElementById("detailPlatform").textContent = "Platform A";
+      document.getElementById("detailOrderNumber").textContent = "ORD-001";
+      document.getElementById("detail1COrderID").textContent = "12345";
+      document.getElementById("detailOrderDate").textContent = "2025-02-25";
+      document.getElementById("detailOrderTotal").textContent = "$100";
+      document.getElementById("detailOrderStatus").textContent = "New";
+      document.getElementById("detailPaymentType").textContent = "Credit Card";
+      document.getElementById("detailCustomer").textContent = "John Doe";
+      document.getElementById("detailCustomerAddress").textContent = "123 Main St";
+      document.getElementById("detailDeliveryMethod").textContent = "Standard";
+      
+      // Populate products list (for demo purposes, one product)
+      const productsHtml = `<tr>
+                              <td>0123456789</td>
+                              <td>Brand X</td>
+                              <td>M</td>
+                              <td>Blue</td>
+                              <td>$50</td>
+                              <td>Pending</td>
+                              <td><button class="btn btn-sm btn-warning" onclick="openChangeStatusPopup(event, 'product1')">Change Status</button></td>
+                            </tr>`;
+      document.getElementById("productsList").innerHTML = productsHtml;
+      
+      // Open the modal (using Bootstrap modal)
+      $('#orderDetailModal').modal('show');
+    }
+    
+    // Function to open change status popup (can be a modal or a simple prompt)
+    function openChangeStatusPopup(event, productId) {
+      // Prevent the row click event from propagating
+      event.stopPropagation();
+      const newStatus = prompt("Enter new status for the product:\nOptions: Delivered, Rejected By Customer, Cancelled By Sinteks, Returned, Pending Customer Delivery, Pending Product Collection");
+      if (newStatus) {
+        // Send update request via API, e.g., using fetch.
+        alert("Status updated to: " + newStatus);
       }
-    });
+    }
+    
+    // Function to open the signature capture screen
+    function openSignatureCapture() {
+      // Redirect to signature.html or open it in a modal as desired
+      window.location.href = "signature.html";
+    }
+    
+    // Call loadOrders on page load to fetch and display data
+    window.onload = loadOrders;
   </script>
 </body>
 </html>
