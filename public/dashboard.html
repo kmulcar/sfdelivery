@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Driver Dashboard</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <!-- Firebase and other necessary scripts -->
+  <!-- Firebase and necessary scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-auth-compat.js"></script>
   <script src="firebase-config.js"></script>
@@ -48,7 +48,7 @@
           </tr>
         </thead>
         <tbody id="activeOrdersList">
-          <!-- Orders will be loaded here -->
+          <!-- Active orders will be loaded here -->
         </tbody>
       </table>
     </div>
@@ -90,19 +90,27 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
         <div class="modal-body">
-          <!-- Order details content -->
+          <!-- Two-column Order Details Layout -->
           <div id="orderDetails">
             <h4>Order Information</h4>
-            <p><strong>Platform:</strong> <span id="detailPlatform"></span></p>
-            <p><strong>Order Number:</strong> <span id="detailOrderNumber"></span></p>
-            <p><strong>1C Order ID:</strong> <span id="detail1COrderID"></span></p>
-            <p><strong>Order Date:</strong> <span id="detailOrderDate"></span></p>
-            <p><strong>Order Total:</strong> <span id="detailOrderTotal"></span></p>
-            <p><strong>Order Status:</strong> <span id="detailOrderStatus"></span></p>
-            <p><strong>Payment Type:</strong> <span id="detailPaymentType"></span></p>
-            <p><strong>Customer:</strong> <span id="detailCustomer"></span></p>
-            <p><strong>Customer Address:</strong> <span id="detailCustomerAddress"></span></p>
-            <p><strong>Delivery Method:</strong> <span id="detailDeliveryMethod"></span></p>
+            <div class="row">
+              <!-- Left Column -->
+              <div class="col-md-6">
+                <p><strong>Platform:</strong> <span id="detailPlatform">Platform A</span></p>
+                <p><strong>Order Number:</strong> <span id="detailOrderNumber">ORD-001</span></p>
+                <p><strong>1C Order ID:</strong> <span id="detail1COrderID">12345</span></p>
+                <p><strong>Order Date:</strong> <span id="detailOrderDate">2025-02-25</span></p>
+                <p><strong>Order Total:</strong> <span id="detailOrderTotal">$100</span></p>
+              </div>
+              <!-- Right Column -->
+              <div class="col-md-6">
+                <p><strong>Order Status:</strong> <span id="detailOrderStatus">New</span></p>
+                <p><strong>Payment Type:</strong> <span id="detailPaymentType">Credit Card</span></p>
+                <p><strong>Customer:</strong> <span id="detailCustomer">John Doe</span></p>
+                <p><strong>Customer Address:</strong> <span id="detailCustomerAddress">123 Main St</span></p>
+                <p><strong>Delivery Method:</strong> <span id="detailDeliveryMethod">Standard</span></p>
+              </div>
+            </div>
           </div>
           <hr>
           <!-- Ordered Products Section -->
@@ -167,7 +175,7 @@
     </div>
   </div>
   
-  <!-- Include jQuery and Bootstrap JS (required for modals) -->
+  <!-- Include jQuery and Bootstrap JS (for modals) -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
   
@@ -237,7 +245,7 @@
       document.getElementById("detailCustomerAddress").textContent = "123 Main St";
       document.getElementById("detailDeliveryMethod").textContent = "Standard";
       
-      // Populate product list (example for one product)
+      // Populate products list (example for one product)
       const productsHtml = `<tr>
                               <td>0123456789</td>
                               <td>Brand X</td>
@@ -249,14 +257,13 @@
                             </tr>`;
       document.getElementById("productsList").innerHTML = productsHtml;
       
-      // Open the order detail modal
+      // Open the modal (using Bootstrap modal)
       $('#orderDetailModal').modal('show');
     }
     
     // Function to open the change status modal for a product
     function openChangeStatusPopup(productId) {
       currentProductId = productId;
-      // Optionally, pre-select the current status in the dropdown
       $('#changeStatusModal').modal('show');
     }
     
@@ -268,7 +275,7 @@
         return;
       }
       
-      // Example: Update the status in the UI (replace with an API call to update in Salesforce)
+      // Update the status in the UI (replace with an API call to update in Salesforce)
       document.getElementById("productStatus_" + currentProductId).textContent = newStatus;
       $('#changeStatusModal').modal('hide');
       alert("Product status updated to: " + newStatus);
