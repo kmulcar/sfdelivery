@@ -4,12 +4,11 @@
   <meta charset="UTF-8">
   <title>Driver Dashboard</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <!-- Firebase and other scripts as needed -->
+  <!-- Firebase and other necessary scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-auth-compat.js"></script>
   <script src="firebase-config.js"></script>
   <style>
-    /* Custom styles, if needed */
     .tab-content { margin-top: 20px; }
   </style>
 </head>
@@ -35,7 +34,7 @@
   
   <!-- Tab Content -->
   <div class="tab-content">
-    <!-- Active Orders -->
+    <!-- Active Orders Tab -->
     <div id="activeOrders" class="tab-pane active">
       <h3>Active Orders</h3>
       <table class="table table-striped">
@@ -54,7 +53,7 @@
       </table>
     </div>
     
-    <!-- Completed Orders -->
+    <!-- Completed Orders Tab -->
     <div id="completedOrders" class="tab-pane" style="display:none;">
       <h3>Completed Orders</h3>
       <table class="table table-striped">
@@ -73,7 +72,7 @@
       </table>
     </div>
     
-    <!-- Statistics -->
+    <!-- Statistics Tab -->
     <div id="stats" class="tab-pane" style="display:none;">
       <h3>Statistics</h3>
       <p>Delivered Today: <span id="deliveredToday">X</span></p>
@@ -82,7 +81,7 @@
     </div>
   </div>
   
-  <!-- Order Detail Modal (hidden until needed) -->
+  <!-- Order Detail Modal -->
   <div class="modal fade" id="orderDetailModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
@@ -106,6 +105,7 @@
             <p><strong>Delivery Method:</strong> <span id="detailDeliveryMethod"></span></p>
           </div>
           <hr>
+          <!-- Ordered Products Section -->
           <div id="orderedProducts">
             <h4>Ordered Products</h4>
             <table class="table table-bordered">
@@ -121,12 +121,12 @@
                 </tr>
               </thead>
               <tbody id="productsList">
-                <!-- Ordered products will be dynamically loaded -->
+                <!-- Ordered products will be loaded here -->
               </tbody>
             </table>
           </div>
           <hr>
-          <!-- GET SIGNATURE button -->
+          <!-- GET SIGNATURE Button -->
           <div>
             <button class="btn btn-success" onclick="openSignatureCapture()">GET SIGNATURE</button>
           </div>
@@ -135,33 +135,62 @@
     </div>
   </div>
   
-  <!-- Include Bootstrap and jQuery JS (for modals) -->
+  <!-- Change Status Modal -->
+  <div class="modal fade" id="changeStatusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Change Product Status</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="changeStatusForm">
+            <div class="form-group">
+              <label for="statusSelect">Select New Status:</label>
+              <select id="statusSelect" class="form-control">
+                <option value="">-- Choose --</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Rejected By Customer">Rejected By Customer</option>
+                <option value="Cancelled By Sinteks">Cancelled By Sinteks</option>
+                <option value="Returned">Returned</option>
+                <option value="Pending Customer Delivery">Pending Customer Delivery</option>
+                <option value="Pending Product Collection">Pending Product Collection</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="saveStatusChange()">Save Status</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Include jQuery and Bootstrap JS (required for modals) -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
   
   <!-- Custom JavaScript -->
   <script>
-    // Function to switch tabs
+    // Global variable to store current product ID for status change
+    let currentProductId = null;
+    
+    // Function to switch between tabs
     function showTab(tab) {
       document.getElementById("activeOrders").style.display = (tab === 'active') ? 'block' : 'none';
       document.getElementById("completedOrders").style.display = (tab === 'completed') ? 'block' : 'none';
       document.getElementById("stats").style.display = (tab === 'stats') ? 'block' : 'none';
-      
-      // Update active tab styling if desired...
     }
     
-    // Placeholder: Load orders for Active and Completed tabs via API calls
+    // Dummy function to load orders - replace with your API calls
     function loadOrders() {
-      // For demonstration, let's assume you have a function to fetch orders for the logged-in driver.
-      // Replace the below with an actual AJAX/fetch call.
       const activeOrders = [
         { platform: "Platform A", orderId1C: "12345", status: "New", total: "$100", customer: "John Doe", id: "order1" },
-        // ... more orders
       ];
       
       const completedOrders = [
         { platform: "Platform A", orderId1C: "67890", status: "Completed", total: "$150", customer: "Jane Smith", id: "order2" },
-        // ... more orders
       ];
       
       let activeHtml = "";
@@ -188,16 +217,15 @@
       });
       document.getElementById("completedOrdersList").innerHTML = completedHtml;
       
-      // Also, update the statistics (for demo purposes)
+      // Update statistics (example data)
       document.getElementById("deliveredToday").textContent = 5;
       document.getElementById("deliveredWeek").textContent = 20;
       document.getElementById("deliveredMonth").textContent = 75;
     }
     
-    // Function to open the order detail modal and populate it
+    // Function to open order detail modal and populate it with data (dummy data for now)
     function openOrderDetail(orderId) {
-      // For demo, use static data. Replace with an API call to get order details.
-      // Populate order details fields
+      // Populate order details (replace with API call data as needed)
       document.getElementById("detailPlatform").textContent = "Platform A";
       document.getElementById("detailOrderNumber").textContent = "ORD-001";
       document.getElementById("detail1COrderID").textContent = "12345";
@@ -209,40 +237,49 @@
       document.getElementById("detailCustomerAddress").textContent = "123 Main St";
       document.getElementById("detailDeliveryMethod").textContent = "Standard";
       
-      // Populate products list (for demo purposes, one product)
+      // Populate product list (example for one product)
       const productsHtml = `<tr>
                               <td>0123456789</td>
                               <td>Brand X</td>
                               <td>M</td>
                               <td>Blue</td>
                               <td>$50</td>
-                              <td>Pending</td>
-                              <td><button class="btn btn-sm btn-warning" onclick="openChangeStatusPopup(event, 'product1')">Change Status</button></td>
+                              <td id="productStatus_product1">Pending</td>
+                              <td><button class="btn btn-sm btn-warning" onclick="openChangeStatusPopup('product1')">Change Status</button></td>
                             </tr>`;
       document.getElementById("productsList").innerHTML = productsHtml;
       
-      // Open the modal (using Bootstrap modal)
+      // Open the order detail modal
       $('#orderDetailModal').modal('show');
     }
     
-    // Function to open change status popup (can be a modal or a simple prompt)
-    function openChangeStatusPopup(event, productId) {
-      // Prevent the row click event from propagating
-      event.stopPropagation();
-      const newStatus = prompt("Enter new status for the product:\nOptions: Delivered, Rejected By Customer, Cancelled By Sinteks, Returned, Pending Customer Delivery, Pending Product Collection");
-      if (newStatus) {
-        // Send update request via API, e.g., using fetch.
-        alert("Status updated to: " + newStatus);
-      }
+    // Function to open the change status modal for a product
+    function openChangeStatusPopup(productId) {
+      currentProductId = productId;
+      // Optionally, pre-select the current status in the dropdown
+      $('#changeStatusModal').modal('show');
     }
     
-    // Function to open the signature capture screen
+    // Function to save the status change (triggered by the modal's Save button)
+    function saveStatusChange() {
+      const newStatus = document.getElementById("statusSelect").value;
+      if (!newStatus) {
+        alert("Please select a status.");
+        return;
+      }
+      
+      // Example: Update the status in the UI (replace with an API call to update in Salesforce)
+      document.getElementById("productStatus_" + currentProductId).textContent = newStatus;
+      $('#changeStatusModal').modal('hide');
+      alert("Product status updated to: " + newStatus);
+    }
+    
+    // Function to open signature capture page
     function openSignatureCapture() {
-      // Redirect to signature.html or open it in a modal as desired
       window.location.href = "signature.html";
     }
     
-    // Call loadOrders on page load to fetch and display data
+    // Load orders when the page loads
     window.onload = loadOrders;
   </script>
 </body>
