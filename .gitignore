@@ -1,0 +1,13 @@
+# Ignore macOS system files
+.DS_Store
+
+# Ignore log files
+*.log
+
+# Ignore node modules (if any)
+node_modules/
+
+# Ignore temporary files
+*.tmp
+
+# (Add any other patterns specific to your project)
