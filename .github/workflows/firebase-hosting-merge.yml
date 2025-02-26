@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build_and_deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +23,5 @@ jobs:
 
       - name: Deploy to Firebase Hosting
         env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DELIVERY_TRACKING_81C66 }}
-        run: |
-          echo "$FIREBASE_SERVICE_ACCOUNT" > firebase-service-account.json
-          firebase deploy --token "$(cat firebase-service-account.json)"
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: firebase deploy --non-interactive --token "$FIREBASE_TOKEN"
